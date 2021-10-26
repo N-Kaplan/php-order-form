@@ -79,7 +79,7 @@
         <button type="submit" class="btn btn-primary">Order!</button>
     </form>
 
-    <footer>You already ordered <strong>&euro; <?php echo $_SESSION["totalValue"] ?></strong> in food and drinks.</footer>
+    <footer>Your last order: <strong>&euro; <?php echo $_SESSION["totalValue"] ?></strong> in food and drinks. Today's orders: <strong>&euro;<?php echo $_SESSION["allOrders"] ?></strong>.</footer>
 </div>
 
 <style>

@@ -5,13 +5,6 @@ declare(strict_types=1);
 //we are going to use session variables, so we need to enable sessions
 session_start();
 
-//cookie, timed for 1 day
-if (!isset($_COOKIE["allOrders"])) {
-    setcookie("user", "name", time() + (86400 * 30));
-    $_COOKIE["allOrders"] = 0;
-}
-
-
 function whatIsHappening() {
     echo '<h2>$_GET</h2>';
     var_dump($_GET);
@@ -40,9 +33,7 @@ $products_drinks = [
 ];
 
 $_SESSION["totalValue"] = 0;
-
-var_dump(isset($_COOKIE["allOrders"]));
-var_dump(($_COOKIE["expires"]));
+$_SESSION["allOrders"] = $_COOKIE["allOrders"];
 
 //switch between food and drinks menu
 
@@ -55,12 +46,18 @@ if (isset($_POST["products"])) {
         if (isset($prod)) {
             $_SESSION["totalValue"] += $products[$index]['price'];
         }
-    };
+    }
     if (isset($_POST["express_delivery"])) {
         $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
-
     }
-    $_COOKIE["allOrders"] += $_SESSION["totalValue"];
+
+    //cookie, timed for 1 day
+    if (!isset($_COOKIE["allOrders"])) {
+        $_SESSION["allOrders"] = $_SESSION["totalValue"];
+    } else {
+        $_SESSION["allOrders"] = floatval($_COOKIE["allOrders"]) + $_SESSION["totalValue"];
+    }
+    setcookie("allOrders", strval($_SESSION["allOrders"]), time() + (86400 * 30));
 }
 
 //alert
