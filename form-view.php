@@ -13,6 +13,7 @@
 <div class="container">
     <h1>Order food in restaurant "the Personal Ham Processors"</h1>
     <?php if (isset($_POST["sent"]) && !empty($_POST["sent"])){sentAlert($_POST["sent"]);} ?>
+    <?php if (isset($_SESSION["order_error"]) && !empty($_SESSION["order_error"])){orderAlert($_SESSION["order_error"]);} ?>
 
     <nav>
         <ul class="nav">

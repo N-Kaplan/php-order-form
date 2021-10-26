@@ -39,31 +39,15 @@ $_SESSION["allOrders"] = $_COOKIE["allOrders"];
 
 (isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
 
-// add up prices
-
-if (isset($_POST["products"])) {
-    foreach ($_POST["products"] as $index => $prod) {
-        if (isset($prod)) {
-            $_SESSION["totalValue"] += $products[$index]['price'];
-        }
-    }
-    if (isset($_POST["express_delivery"])) {
-        $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
-    }
-
-    //cookie, timed for 1 day
-    if (!isset($_COOKIE["allOrders"])) {
-        $_SESSION["allOrders"] = $_SESSION["totalValue"];
-    } else {
-        $_SESSION["allOrders"] = floatval($_COOKIE["allOrders"]) + $_SESSION["totalValue"];
-    }
-    setcookie("allOrders", strval($_SESSION["allOrders"]), time() + (86400 * 30));
-}
 
 //alert
 
 function formAlert($alert) {
     echo "<div class='alert alert-primary' role='alert'>$alert</div>";
+}
+
+function orderAlert($alert) {
+    echo "<div class=\"alert alert-warning\" role=\"alert\">$alert</div>";
 }
 
 function sentAlert($alert) {
@@ -81,7 +65,7 @@ function test_input($data) {
 }
 
 $email = $street = $street_nr = $city = $zipcode = $sent = "";
-$email_error = $street_error = $street_nr_error = $city_error = $zipcode_error = "";
+$email_error = $street_error = $street_nr_error = $city_error = $zipcode_error = $_SESSION["order_error"] = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     //email
@@ -152,8 +136,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["zipcode_error"] = "At least 4 numbers expected";
         }
     }
-    //displaying order sent message
+
+    //order can be sent if all required input fields are filled and at least one item has been picked.
+    $order_valid = false;
     if ($_SESSION["email_error"] === "" && $_SESSION["street_error"] === "" && $_SESSION["street_nr_error"] === "" && $_SESSION["city_error"] === "" && $_SESSION["zipcode_error"] === "") {
+        if (isset($_POST["products"])) {
+            $order_valid = true;
+            $_SESSION["order_error"] = "";
+        } else {
+            $_SESSION["order_error"] = "No products selected. Please select at least one product before ordering.";
+            $_POST["sent"] = "";
+        }
+    }
+
+    // add up prices
+
+    if ($order_valid) {
+        foreach ($_POST["products"] as $index => $prod) {
+            if (isset($prod)) {
+                $_SESSION["totalValue"] += $products[$index]['price'];
+            }
+        }
+        if (isset($_POST["express_delivery"])) {
+            $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
+        }
+
+        //cookie, timed for 1 day
+        if (!isset($_COOKIE["allOrders"])) {
+            $_SESSION["allOrders"] = $_SESSION["totalValue"];
+        } else {
+            $_SESSION["allOrders"] = floatval($_COOKIE["allOrders"]) + $_SESSION["totalValue"];
+        }
+        setcookie("allOrders", strval($_SESSION["allOrders"]), time() + (86400 * 30));
+    }
+
+    //displaying order sent message
+    if ($order_valid === true) {
         if (isset($_POST["express_delivery"])){
             $_POST["sent"] = "Your order has been sent. Delivery time is 45 minutes.";
         } else {
