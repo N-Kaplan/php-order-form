@@ -35,10 +35,21 @@ $products_drinks = [
 
 $_SESSION["totalValue"] = $_SESSION["allOrders"] =0;
 
-
+$products = [];
 //switch between food and drinks menu
 
-(isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
+//(isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
+
+$_POST["drinks_menu"] = false;
+
+if (isset($_GET["food"]) && $_GET["food"] === "0") {
+    $products = $products_drinks;
+    $_POST["drinks_menu"] = true;
+
+} else {
+    $products = $products_food;
+    $_POST["drinks_menu"] = false;
+}
 
 $_SESSION["cart"] = [];
 
@@ -145,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     //order can be sent if all required input fields are filled and at least one item has been picked.
     $order_valid = false;
     if ($email_error === "" && $street_error === "" && $street_nr_error === "" && $city_error === "" && $zipcode_error === "") {
-        if (!empty($_SESSION["cart"])) {
+        if (isset($_POST["products"])) {
             $order_valid = true;
             $order_error = "";
         } else {
@@ -159,8 +170,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($order_valid) {
         foreach ($_POST["products"] as $prod => $amount) {
             if (isset($prod)) {
-                //can't use get and post at once!
                 $_SESSION["cart"][] = $products[$prod];
+
+                //$_SESSION["cart"][] = $products_drinks[$prod];
                 //$_SESSION["cart"][] = [$products[$index]];
                 //var_dump( $_SESSION["cart"]);
                 //($products === $products_drinks) ? $_SESSION["totalValue"] += $products_drinks[$index]['price'] : $_SESSION["totalValue"] += $products_food[$index]['price'];
