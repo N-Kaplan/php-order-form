@@ -33,23 +33,23 @@ $products_drinks = [
     ['name' => 'Ice-tea', 'price' => 3],
 ];
 
-$_SESSION["totalValue"] = $_SESSION["allOrders"] =0;
+if (!isset($_SESSION["totalValue"])) {
+    $_SESSION["totalValue"] = 0;
+}
 
-$products = [];
+
 //switch between food and drinks menu
 
-//(isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
+(isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
 
-$_POST["drinks_menu"] = false;
-
-if (isset($_GET["food"]) && $_GET["food"] === "0") {
-    $products = $products_drinks;
-    $_POST["drinks_menu"] = true;
-
-} else {
-    $products = $products_food;
-    $_POST["drinks_menu"] = false;
-}
+//if (isset($_GET["food"]) && $_GET["food"] === "0") {
+//    $products = $products_drinks;
+//    $_POST["drinks_menu"] = true;
+//
+//} else {
+//    $products = $products_food;
+//    $_POST["drinks_menu"] = false;
+//}
 
 $_SESSION["cart"] = [];
 
@@ -168,21 +168,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // add up prices (isset($_GET["food"]) && $_GET["food"] === "0") ?
 
     if ($order_valid) {
-        foreach ($_POST["products"] as $prod => $amount) {
-            if (isset($prod)) {
-                $_SESSION["cart"][] = $products[$prod];
-
-                //$_SESSION["cart"][] = $products_drinks[$prod];
-                //$_SESSION["cart"][] = [$products[$index]];
-                //var_dump( $_SESSION["cart"]);
-                //($products === $products_drinks) ? $_SESSION["totalValue"] += $products_drinks[$index]['price'] : $_SESSION["totalValue"] += $products_food[$index]['price'];
-//                if ($products === $products_drinks) {
-//                    echo "drinks";
-//                } else {
-//                    var_dump($products);
-//                }
+        foreach ($_POST["products"] as $product => $amount) {
+            if (isset($product)) {
+                $_SESSION["cart"][] = $products[$product];
+                $_SESSION["totalValue"] += $products[$product]['price'];
             }
         }
+
         if (isset($_POST["express_delivery"])) {
             $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
         }
