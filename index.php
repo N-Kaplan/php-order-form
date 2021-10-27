@@ -37,24 +37,55 @@ if (!isset($_SESSION["totalValue"])) {
     $_SESSION["totalValue"] = 0;
 }
 
-if (!isset($_SESSION["allOrders"])) {
-    $_SESSION["allOrders"] = 0;
-}
-
 // create an address template
 
 function address_display ($street, $street_nr, $zip, $city) {
-    return "$street, $street_nr\n
-    $zip, $city.";
+    return "$street $street_nr<br>$zip $city";
 }
 
 // display cart items
 
 function cart_display ($cart) {
     foreach($cart as $item) {
-    echo implode(": ", $item) . "<br>" ;
+    return implode(": ", $item) . "<br>" ;
     }
 }
+
+// define owner's mail
+define("owner_mail" , "info@restaurant.com");
+
+//display email message
+
+function email_display($email, $street, $street_nr, $zip, $city, $cart, $sent) {
+    $disp_address = address_display($street, $street_nr, $zip, $city);
+    $disp_cart = cart_display($cart);
+    $disp_price = cart_price($cart);
+    $disp_sent =
+    $message = "Dear customer, \n
+        Your information is: \n
+        {$email}
+        Your address is: \n
+        You ordered: \n
+        {$disp_cart}\n
+        Your total is: \n
+        {$disp_price}\n
+        {$sent}";
+
+    return $message;
+
+
+//    // To send HTML mail, the Content-type header must be set (from php.net)
+//    $headers[] = 'MIME-Version: 1.0';
+//    $headers[] = 'Content-type: text/html; charset="UTF-8"';
+//
+//    // Additional headers
+//    $headers[] = "To:";
+//    $headers[] = "From:";
+
+}
+
+// to actually mail (from php.net, not used here):
+//mail($to, $subject, $message, implode("\r\n", $headers));
 
 // calculate cart price
 
@@ -75,9 +106,6 @@ function cart_price ($cart) {
 (isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
 
 $_SESSION["cart"] = [];
-
-// define owner's mail
-define("mail" , "info@restaurant.com");
 
 //alerts
 
@@ -201,10 +229,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
-//        if (isset($_POST["express_delivery"])) {
-//            $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
-//        }
-
        // cookie, timed for 1 day
         if (isset($_COOKIE["totalValue"])) {
             $_SESSION["totalValue"] = floatval($_COOKIE["totalValue"]) + $_SESSION["totalValue"];
@@ -217,11 +241,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $_POST["sent"] = "Your order has been sent. Delivery time is 2 hours.";
         }
+
+        // display email to customer on page:
+
+
     } else {
         $_POST["sent"] = "";
     }
-
-    // email to customer
 }
 
 whatIsHappening();
@@ -234,3 +260,6 @@ require 'form-view.php';
 //formAlert(mailMessage($_SESSION["email"], $_SESSION["street"], $_SESSION["street_nr"], $_SESSION["zipcode"], $_SESSION["city"], "", $_SESSION["totalValue"], $sent));
 //cart_display($_SESSION["cart"]);
 //cart_price($_SESSION["cart"]);
+//formAlert(address_display($_SESSION["street"], $_SESSION["street_nr"], $_SESSION["zipcode"], $_SESSION["city"]));
+
+formAlert(email_display($_SESSION["email"], $_SESSION["street"], $_SESSION["street_nr"], $_SESSION["zipcode"], $_SESSION["city"], $_SESSION["city"], $_POST["sent"]));
