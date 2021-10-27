@@ -37,6 +37,10 @@ if (!isset($_SESSION["totalValue"])) {
     $_SESSION["totalValue"] = 0;
 }
 
+if (!isset($_SESSION["allOrders"])) {
+    $_SESSION["allOrders"] = 0;
+}
+
 
 //switch between food and drinks menu
 
@@ -165,7 +169,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // add up prices (isset($_GET["food"]) && $_GET["food"] === "0") ?
+    // add up prices
 
     if ($order_valid) {
         foreach ($_POST["products"] as $product => $amount) {
@@ -180,12 +184,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
        // cookie, timed for 1 day
-        if (!isset($_COOKIE["allOrders"])) {
-            $_SESSION["allOrders"] = $_SESSION["totalValue"];
-        } else {
-            $_SESSION["allOrders"] = floatval($_COOKIE["allOrders"]) + $_SESSION["totalValue"];
+        if (isset($_COOKIE["totalValue"])) {
+            $_SESSION["totalValue"] = floatval($_COOKIE["totalValue"]) + $_SESSION["totalValue"];
         }
-        setcookie("allOrders", strval($_SESSION["allOrders"]), time() + (86400 * 30));
+        setcookie("totalValue", strval($_SESSION["totalValue"]), time() + (86400 * 30));
     }
 
     //displaying order sent message
