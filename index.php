@@ -41,23 +41,45 @@ if (!isset($_SESSION["allOrders"])) {
     $_SESSION["allOrders"] = 0;
 }
 
+// create an address template
+
+function address_display ($street, $street_nr, $zip, $city) {
+    return "$street, $street_nr\n
+    $zip, $city.";
+}
+
+// display cart items
+
+function cart_display ($cart) {
+    foreach($cart as $item) {
+    echo implode(": ", $item) . "<br>" ;
+    }
+}
+
+// calculate cart price
+
+function cart_price ($cart) {
+    $total = 0;
+    foreach ($cart as $item) {
+        $total += $item["price"];
+    }
+    if (isset($_POST["express_delivery"])) {
+        $total += floatval($_POST["express_delivery"]);
+    }
+    return $total;
+}
+
 
 //switch between food and drinks menu
 
 (isset($_GET["food"]) && $_GET["food"] === "0") ? $products = $products_drinks : $products = $products_food;
 
-//if (isset($_GET["food"]) && $_GET["food"] === "0") {
-//    $products = $products_drinks;
-//    $_POST["drinks_menu"] = true;
-//
-//} else {
-//    $products = $products_food;
-//    $_POST["drinks_menu"] = false;
-//}
-
 $_SESSION["cart"] = [];
 
-//alert
+// define owner's mail
+define("mail" , "info@restaurant.com");
+
+//alerts
 
 function formAlert($alert)
 {
@@ -80,7 +102,6 @@ function sentAlert($alert)
 function test_input($data)
 {
     $data = trim($data);
-    $data = stripslashes($data);
     $data = htmlspecialchars($data);
     return $data;
 }
@@ -169,29 +190,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // add up prices
-
     if ($order_valid) {
+        // add up prices
         foreach ($_POST["products"] as $product => $amount) {
             if (isset($product)) {
                 $_SESSION["cart"][] = $products[$product];
-                $_SESSION["totalValue"] += $products[$product]['price'];
+                $total = cart_price($_SESSION["cart"]);
+                $total_all = floatval($_SESSION["totalValue"]) + $total;
+                $_SESSION["totalValue"] = $total_all;
             }
         }
 
-        if (isset($_POST["express_delivery"])) {
-            $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
-        }
+//        if (isset($_POST["express_delivery"])) {
+//            $_SESSION["totalValue"] += floatval($_POST["express_delivery"]);
+//        }
 
        // cookie, timed for 1 day
         if (isset($_COOKIE["totalValue"])) {
             $_SESSION["totalValue"] = floatval($_COOKIE["totalValue"]) + $_SESSION["totalValue"];
         }
-        setcookie("totalValue", strval($_SESSION["totalValue"]), time() + (86400 * 30));
-    }
+        //setcookie("totalValue", strval($_SESSION["totalValue"]), time() + (86400 * 30));
 
-    //displaying order sent message
-    if ($order_valid === true) {
+        //displaying order sent message
         if (isset($_POST["express_delivery"])) {
             $_POST["sent"] = "Your order has been sent. Delivery time is 45 minutes.";
         } else {
@@ -200,8 +220,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $_POST["sent"] = "";
     }
-}
 
+    // email to customer
+}
 
 whatIsHappening();
 
@@ -209,3 +230,7 @@ whatIsHappening();
 //print_r($session_errors);
 
 require 'form-view.php';
+// ($email, $street, $street_nr, $zip, $city, $order, $totalValue, $sent)
+//formAlert(mailMessage($_SESSION["email"], $_SESSION["street"], $_SESSION["street_nr"], $_SESSION["zipcode"], $_SESSION["city"], "", $_SESSION["totalValue"], $sent));
+//cart_display($_SESSION["cart"]);
+//cart_price($_SESSION["cart"]);
